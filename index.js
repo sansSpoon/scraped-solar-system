@@ -32,7 +32,7 @@ function scrape(html) {
 	const planet = {};
 	
 	planet['name'] = rootNode.find('caption.fn.org')
-		.contents().first().text();
+		.contents().first().text().trim();
 	
 	planet['radius'] = rootNode.find('div:contains("Mean radius")')
 		.parent().next().find('li:first-child > span > span').contents()
@@ -48,21 +48,41 @@ function scrape(html) {
 	const aphelion = rootNode.find('a:contains("Aphelion")')
 		.parent().next().find('li:nth-child(2)');
 		
-	if(aphelion.children().length > 0) {
-		const aphelionText = aphelion.text();
-		planet['aphelion'] = aphelionText.substr(aphelionText.indexOf('♠')+1);
+	if(aphelion.length > 0) {
+		
+		if(aphelion.children().length > 0) {
+			const aphelionText = aphelion.text();
+			planet['aphelion'] = aphelionText.substr(aphelionText.indexOf('♠')+1);
+		} else {
+			planet['aphelion'] = aphelion.text();
+		}
 	} else {
-		planet['aphelion'] = aphelion.text();
+		
+		const aphelionText = rootNode.find('a:contains("Aphelion")')
+		.parent().next().text();
+		
+		planet['aphelion'] = aphelionText.substr(0,aphelionText.indexOf('\n'));
+		
 	}
 
 	const perihelion = rootNode.find('a:contains("Perihelion")')
 		.parent().next().find('li:nth-child(2)');
 
-	if(perihelion.children().length > 0) {
-		const perihelionText = perihelion.text();
-		planet['perihelion'] = perihelionText.substr(perihelionText.indexOf('♠')+1);
+	if(perihelion.length > 0) {
+
+		if(perihelion.children().length > 0) {
+			const perihelionText = perihelion.text();
+			planet['perihelion'] = perihelionText.substr(perihelionText.indexOf('♠')+1);
+		} else {
+			planet['perihelion'] = perihelion.text();
+		}
 	} else {
-		planet['perihelion'] = perihelion.text();
+		
+		const perihelionText = rootNode.find('a:contains("Perihelion")')
+		.parent().next().text();
+		
+		planet['perihelion'] = perihelionText.substr(0,perihelionText.indexOf('\n'));
+		
 	}
 		
 	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
