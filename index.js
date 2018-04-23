@@ -33,23 +33,39 @@ function scrape(html) {
 	
 	planet['name'] = rootNode.find('caption.fn.org')
 		.contents().first().text().trim();
+
+
+
+	const radius = rootNode.find('div:contains("Mean radius")')
+		.parent().next().find('li:first-child > span > span')
 	
-	planet['radius'] = rootNode.find('div:contains("Mean radius")')
-		.parent().next().find('li:first-child > span > span').contents()
-		.filter(function() {
-			return this.nodeType == 3;
-		}).first().text() + ' km';
+	if(radius.length > 0) {
+		planet['radius'] = radius.contents()
+			.filter(function() {
+				return this.nodeType == 3;
+			}).first().text() + ' km';
+	} else {
+		const radiusText = rootNode.find('div:contains("Mean radius")')
+		.parent().next().text();
+		planet['radius'] = radiusText.substr(0,radiusText.indexOf('±')).trim() + ' km';
+	}
+
+
 
 	const rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
 		.parent().next().text();
+	
+	if(rotationVelocity.includes('\n')) {
+		planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf('\n'));
+	} else {
+		planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
+	}
 
-	planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
 
 	const aphelion = rootNode.find('a:contains("Aphelion")')
 		.parent().next().find('li:nth-child(2)');
 		
 	if(aphelion.length > 0) {
-		
 		if(aphelion.children().length > 0) {
 			const aphelionText = aphelion.text();
 			planet['aphelion'] = aphelionText.substr(aphelionText.indexOf('♠')+1);
@@ -57,7 +73,6 @@ function scrape(html) {
 			planet['aphelion'] = aphelion.text();
 		}
 	} else {
-		
 		const aphelionText = rootNode.find('a:contains("Aphelion")')
 		.parent().next().text();
 		
@@ -65,11 +80,12 @@ function scrape(html) {
 		
 	}
 
+
+
 	const perihelion = rootNode.find('a:contains("Perihelion")')
 		.parent().next().find('li:nth-child(2)');
 
 	if(perihelion.length > 0) {
-
 		if(perihelion.children().length > 0) {
 			const perihelionText = perihelion.text();
 			planet['perihelion'] = perihelionText.substr(perihelionText.indexOf('♠')+1);
@@ -77,13 +93,13 @@ function scrape(html) {
 			planet['perihelion'] = perihelion.text();
 		}
 	} else {
-		
 		const perihelionText = rootNode.find('a:contains("Perihelion")')
 		.parent().next().text();
 		
 		planet['perihelion'] = perihelionText.substr(0,perihelionText.indexOf('\n'));
-		
 	}
+
+
 		
 	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
 		.parent().parent().next().contents().first().text();
