@@ -45,11 +45,25 @@ function scrape(html) {
 
 	planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
 
-	planet['aphelion'] = rootNode.find('a:contains("Aphelion")')
-		.parent().next().find('li:nth-child(2)').text();
-	
-	planet['perihelion'] = rootNode.find('a:contains("Perihelion")')
-		.parent().next().find('li:nth-child(2)').text();
+	const aphelion = rootNode.find('a:contains("Aphelion")')
+		.parent().next().find('li:nth-child(2)');
+		
+	if(aphelion.children().length > 0) {
+		const aphelionText = aphelion.text();
+		planet['aphelion'] = aphelionText.substr(aphelionText.indexOf('♠')+1);
+	} else {
+		planet['aphelion'] = aphelion.text();
+	}
+
+	const perihelion = rootNode.find('a:contains("Perihelion")')
+		.parent().next().find('li:nth-child(2)');
+
+	if(perihelion.children().length > 0) {
+		const perihelionText = perihelion.text();
+		planet['perihelion'] = perihelionText.substr(perihelionText.indexOf('♠')+1);
+	} else {
+		planet['perihelion'] = perihelion.text();
+	}
 		
 	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
 		.parent().parent().next().contents().first().text();
