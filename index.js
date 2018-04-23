@@ -6,6 +6,9 @@ const cheerio = require('cheerio');
 const args = process.argv.slice(2);
 const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
 
+const system = {};
+system['planets'] = [];
+
 function json(response) {
 	return response.json()
 }
@@ -24,9 +27,36 @@ function status(response) {
 
 function scrape(html) {
 	const $ = cheerio.load(html);
+	const rootNode = $('table.infobox');
+	
+	const planet = {};
+	
+	planet['name'] = rootNode.find('caption.fn.org')
+		.contents().first().text();
+	
+	planet['radius'] = rootNode.find('div:contains("Mean radius")')
+		.parent().next().find('li:first-child > span > span').contents()
+		.filter(function() {
+			return this.nodeType == 3;
+		}).first().text() + ' km';
 
-	const rootNode = $('.firstHeading').text();
-	console.log(rootNode);
+	const rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
+		.parent().next().text();
+
+	planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
+
+	planet['aphelion'] = rootNode.find('a:contains("Aphelion")')
+		.parent().next().find('li:nth-child(2)').text();
+	
+	planet['perihelion'] = rootNode.find('a:contains("Perihelion")')
+		.parent().next().find('li:nth-child(2)').text();
+		
+	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
+		.parent().parent().next().contents().first().text();
+		
+	system.planets.push(planet);
+
+	console.log(system);
 
 }
 
