@@ -3,8 +3,21 @@
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
-const args = process.argv.slice(2);
-const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
+//const args = process.argv.slice(2);
+//const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
+
+const urlsPlanets = [
+	'https://en.wikipedia.org/wiki/Mercury_(planet)',
+	'https://en.wikipedia.org/wiki/Venus',
+	'https://en.wikipedia.org/wiki/Earth',
+	'https://en.wikipedia.org/wiki/Mars',
+	'https://en.wikipedia.org/wiki/Jupiter',
+	'https://en.wikipedia.org/wiki/Saturn',
+	'https://en.wikipedia.org/wiki/Uranus',
+	'https://en.wikipedia.org/wiki/Neptune'
+];
+
+const system = {};
 
 function json(response) {
 	return response.json()
@@ -22,7 +35,7 @@ function status(response) {
 	}
 }
 
-function scrape(html) {
+function scrapePlanets(html) {
 	const $ = cheerio.load(html);
 	const rootNode = $('table.infobox');
 	
@@ -50,7 +63,6 @@ function scrape(html) {
 	planet['radius'] = radius.trim() + ' km';
 
 
-
 	// ! rotation
 	// ==========
 	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
@@ -58,7 +70,6 @@ function scrape(html) {
 		.match(/\d*\,?\.?\d*\.?\d*\skm\/h/)[0];
 
 	planet['rotationVelocity'] = rotationVelocity;
-
 
 
 	// ! aphelion
@@ -71,7 +82,6 @@ function scrape(html) {
 		.replace(/(\u00A0)|\s|[ ]/g,'');
 
 
-
 	// ! perihelion
 	// ============
 	const perihelion = rootNode.find('a:contains("Perihelion")')
@@ -82,33 +92,52 @@ function scrape(html) {
 		.replace(/(\u00A0)|\s|[ ]/g,'');
 
 
-
 	// ! velocity
 	// ============
 	let orbitVelocity = rootNode.find('a[title="Orbital speed"]')
 		.parent().parent().next().text();
 
 	planet['orbitVelocity'] = orbitVelocity.match(/\d*\.?\d*\skm\/s/)[0];
-	
-	
-	//system.planets.push(planet);
-	
+
 	return planet;
 
 }
 
-Promise.all(urls.map((url) => {
+function scrapeStars(html) {
+	const $ = cheerio.load(html);
+	const rootNode = $('table.infobox');
+
+	const star = {};
+
+	star['name'] = rootNode.find('caption')
+		.contents().first().text().trim();
+
+	star['radius'] = rootNode.find('a[title="Solar radius"]')
+		.text().trim() + ' km';
+
+	star['rotationVelocity'] = rootNode.find('th:contains("Rotation velocity")').next().text()
+		.match(/\d*\.?\d*\×?\d*\skm\/h/)[0];
+
+	return star;
+}
+
+Promise.all(urlsPlanets.map((url) => {
 	return fetch(url)
 		.then(status)
 		.then(text)
-		.then(scrape)
+		.then(scrapePlanets)
 }))
 	.then(planets => {
-		
-		const system = {};
 		system['planets'] = planets;
+		return fetch('https://en.wikipedia.org/wiki/Sun');
+	})
+	.then(status)
+	.then(text)
+	.then(scrapeStars)
+	.then(stars => {
+		system['stars'] = [];
+		system['stars'].push(stars);
 		console.log(system);
-		
 	})
 	.catch(e => {
 		console.log('There has been a problem with the fetch operation: ', e.message);
