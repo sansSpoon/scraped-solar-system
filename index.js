@@ -2,6 +2,7 @@
 
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const fs = require("fs");
 
 //const args = process.argv.slice(2);
 //const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
@@ -15,6 +16,10 @@ const urlsPlanets = [
 	'https://en.wikipedia.org/wiki/Saturn',
 	'https://en.wikipedia.org/wiki/Uranus',
 	'https://en.wikipedia.org/wiki/Neptune'
+];
+
+const urlsStars = [
+	'https://en.wikipedia.org/wiki/Sun'
 ];
 
 const system = {};
@@ -129,7 +134,7 @@ Promise.all(urlsPlanets.map((url) => {
 }))
 	.then(planets => {
 		system['planets'] = planets;
-		return fetch('https://en.wikipedia.org/wiki/Sun');
+		return fetch(urlsStars[0]);
 	})
 	.then(status)
 	.then(text)
@@ -138,6 +143,11 @@ Promise.all(urlsPlanets.map((url) => {
 		system['stars'] = [];
 		system['stars'].push(stars);
 		console.log(system);
+		
+		fs.writeFile("system.json", JSON.stringify(system), function(err) {
+			console.log("File Created");
+		});
+		
 	})
 	.catch(e => {
 		console.log('There has been a problem with the fetch operation: ', e.message);
