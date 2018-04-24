@@ -6,9 +6,6 @@ const cheerio = require('cheerio');
 const args = process.argv.slice(2);
 const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
 
-const system = {};
-system['planets'] = [];
-
 function json(response) {
 	return response.json()
 }
@@ -92,22 +89,27 @@ function scrape(html) {
 		.parent().parent().next().text();
 
 	planet['orbitVelocity'] = orbitVelocity.match(/\d*\.?\d*\skm\/s/)[0];
-
-
-
-
-	system.planets.push(planet);
-
-	console.log(system);
+	
+	
+	//system.planets.push(planet);
+	
+	return planet;
 
 }
 
 Promise.all(urls.map((url) => {
-	fetch(url)
+	return fetch(url)
 		.then(status)
 		.then(text)
 		.then(scrape)
-		.catch(e => {
-			console.log('There has been a problem with the fetch operation: ', e.message);
-		})
-}));
+}))
+	.then(planets => {
+		
+		const system = {};
+		system['planets'] = planets;
+		console.log(system);
+		
+	})
+	.catch(e => {
+		console.log('There has been a problem with the fetch operation: ', e.message);
+	});
