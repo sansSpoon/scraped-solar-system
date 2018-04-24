@@ -56,6 +56,7 @@ function scrape(html) {
 	}
 
 
+
 	// ! rotation
 	// ==========
 	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
@@ -76,45 +77,27 @@ function scrape(html) {
 	planet['rotationVelocity'] = rotationVelocity;
 
 
+
 	// ! aphelion
 	// ==========
 	const aphelion = rootNode.find('a:contains("Aphelion")')
-		.parent().next().find('li:nth-child(2)');
+		.parent().next();
 		
-	if(aphelion.length > 0) {
-		if(aphelion.children().length > 0) {
-			const aphelionText = aphelion.text();
-			planet['aphelion'] = aphelionText.substr(aphelionText.indexOf('♠')+1);
-		} else {
-			planet['aphelion'] = aphelion.text();
-		}
-	} else {
-		const aphelionText = rootNode.find('a:contains("Aphelion")')
-		.parent().next().text();
-		
-		planet['aphelion'] = aphelionText.substr(0,aphelionText.indexOf('\n'));
-		
-	}
+	planet['aphelion'] = aphelion.text().trim()
+		.match(/(\d\.)?(\d{1,3})(,\d{3})*(\u00A0\d{3})*(\.\d+)?\s*AU/)[0]
+		.replace(/(\u00A0)|\s|[ ]/g,'');
+
 
 
 	// ! perihelion
 	// ============
 	const perihelion = rootNode.find('a:contains("Perihelion")')
-		.parent().next().find('li:nth-child(2)');
-
-	if(perihelion.length > 0) {
-		if(perihelion.children().length > 0) {
-			const perihelionText = perihelion.text();
-			planet['perihelion'] = perihelionText.substr(perihelionText.indexOf('♠')+1);
-		} else {
-			planet['perihelion'] = perihelion.text();
-		}
-	} else {
-		const perihelionText = rootNode.find('a:contains("Perihelion")')
-		.parent().next().text();
+		.parent().next()
 		
-		planet['perihelion'] = perihelionText.substr(0,perihelionText.indexOf('\n'));
-	}
+	planet['perihelion'] = perihelion.text().trim()
+		.match(/(\d\.)?(\d{1,3})(,\d{3})*(\u00A0\d{3})*(\.\d+)?\s*AU/)[0]
+		.replace(/(\u00A0)|\s|[ ]/g,'');
+
 
 
 	// ! velocity
