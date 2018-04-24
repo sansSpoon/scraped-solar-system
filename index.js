@@ -57,19 +57,8 @@ function scrape(html) {
 	// ! rotation
 	// ==========
 	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
-		.parent().next().text();
-
-	if(rotationVelocity.includes(' ')) {
-		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
-	}
-
-	if(rotationVelocity.includes('[')) {
-		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('['));
-	}
-
-	if(rotationVelocity.includes('\n')) {
-		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('\n'));
-	}
+		.parent().next().text()
+		.match(/\d*\,?\.?\d*\.?\d*\skm\/h/)[0];
 
 	planet['rotationVelocity'] = rotationVelocity;
 
