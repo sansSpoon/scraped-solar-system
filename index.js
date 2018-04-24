@@ -99,9 +99,14 @@ function scrape(html) {
 
 	// ! velocity
 	// ============
-	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
-		.parent().parent().next().contents().first().text();
-		
+	let orbitVelocity = rootNode.find('a[title="Orbital speed"]')
+		.parent().parent().next().text();
+
+	planet['orbitVelocity'] = orbitVelocity.match(/\d*\.?\d*\skm\/s/)[0];
+
+
+
+
 	system.planets.push(planet);
 
 	console.log(system);
