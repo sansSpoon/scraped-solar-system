@@ -35,7 +35,8 @@ function scrape(html) {
 		.contents().first().text().trim();
 
 
-
+	// ! radius
+	// ========
 	const radius = rootNode.find('div:contains("Mean radius")')
 		.parent().next().find('li:first-child > span > span')
 	
@@ -47,21 +48,36 @@ function scrape(html) {
 	} else {
 		const radiusText = rootNode.find('div:contains("Mean radius")')
 		.parent().next().text();
-		planet['radius'] = radiusText.substr(0,radiusText.indexOf('±')).trim() + ' km';
+		if(radiusText.includes('±')) {
+			planet['radius'] = radiusText.substr(0,radiusText.indexOf('±')).trim() + ' km';
+		} else {
+			planet['radius'] = radiusText.substr(0,radiusText.indexOf(' ')).trim();
+		}
 	}
 
 
-
-	const rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
+	// ! rotation
+	// ==========
+	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
 		.parent().next().text();
 	
-	if(rotationVelocity.includes('\n')) {
-		planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf('\n'));
-	} else {
-		planet['rotationVelocity'] = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
+	if(rotationVelocity.includes(' ')) {
+		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
 	}
+	
+	if(rotationVelocity.includes('[')) {
+		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('['));
+	}
+	
+	if(rotationVelocity.includes('\n')) {
+		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('\n'));
+	}
+	
+	planet['rotationVelocity'] = rotationVelocity;
 
 
+	// ! aphelion
+	// ==========
 	const aphelion = rootNode.find('a:contains("Aphelion")')
 		.parent().next().find('li:nth-child(2)');
 		
@@ -81,7 +97,8 @@ function scrape(html) {
 	}
 
 
-
+	// ! perihelion
+	// ============
 	const perihelion = rootNode.find('a:contains("Perihelion")')
 		.parent().next().find('li:nth-child(2)');
 
@@ -100,7 +117,8 @@ function scrape(html) {
 	}
 
 
-		
+	// ! velocity
+	// ============
 	planet['orbitVelocity'] = rootNode.find('a[title="Orbital speed"]')
 		.parent().parent().next().contents().first().text();
 		
