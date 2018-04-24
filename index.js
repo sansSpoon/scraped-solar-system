@@ -35,25 +35,22 @@ function scrape(html) {
 		.contents().first().text().trim();
 
 
+
 	// ! radius
 	// ========
-	const radius = rootNode.find('div:contains("Mean radius")')
-		.parent().next().find('li:first-child > span > span')
-	
-	if(radius.length > 0) {
-		planet['radius'] = radius.contents()
-			.filter(function() {
-				return this.nodeType == 3;
-			}).first().text() + ' km';
-	} else {
-		const radiusText = rootNode.find('div:contains("Mean radius")')
-		.parent().next().text();
-		if(radiusText.includes('±')) {
-			planet['radius'] = radiusText.substr(0,radiusText.indexOf('±')).trim() + ' km';
-		} else {
-			planet['radius'] = radiusText.substr(0,radiusText.indexOf(' ')).trim();
-		}
+	let radius = rootNode.find('div:contains("Mean radius")')
+		.parent().next().text().trim()
+		.match(/\d*\,?\.?\d*\,?\.?\d*\s?±?\s?\d*\.?\d*\skm/)[0];
+
+	if(radius.includes('±')) {
+		radius = radius.substr(0,radius.indexOf('±'));
 	}
+
+	if(radius.includes('km')) {
+		radius = radius.substr(0,radius.indexOf('km'));
+	}
+
+	planet['radius'] = radius.trim() + ' km';
 
 
 
@@ -61,19 +58,19 @@ function scrape(html) {
 	// ==========
 	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
 		.parent().next().text();
-	
+
 	if(rotationVelocity.includes(' ')) {
 		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf(' '));
 	}
-	
+
 	if(rotationVelocity.includes('[')) {
 		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('['));
 	}
-	
+
 	if(rotationVelocity.includes('\n')) {
 		rotationVelocity = rotationVelocity.substr(0,rotationVelocity.indexOf('\n'));
 	}
-	
+
 	planet['rotationVelocity'] = rotationVelocity;
 
 
