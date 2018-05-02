@@ -144,7 +144,7 @@ Promise.all(urlsPlanets.map((url) => {
 		system['stars'].push(stars);
 		console.log(system);
 		
-		fs.writeFile("system.json", JSON.stringify(system), function(err) {
+		fs.writeFile("system.json", JSON.stringify(system, null, '\t'), function(err) {
 			console.log("File Created");
 		});
 		
