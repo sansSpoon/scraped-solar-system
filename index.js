@@ -7,7 +7,7 @@ const fs = require("fs");
 //const args = process.argv.slice(2);
 //const urls = args.filter((arg) => /^(http|https):\/\/.+/.exec(arg));
 
-const urlsPlanets = [
+const urlPlanets = [
 	'https://en.wikipedia.org/wiki/Mercury_(planet)',
 	'https://en.wikipedia.org/wiki/Venus',
 	'https://en.wikipedia.org/wiki/Earth',
@@ -18,7 +18,7 @@ const urlsPlanets = [
 	'https://en.wikipedia.org/wiki/Neptune'
 ];
 
-const urlsStars = [
+const urlStars = [
 	'https://en.wikipedia.org/wiki/Sun'
 ];
 
@@ -55,7 +55,8 @@ function scrapePlanets(html) {
 	// ========
 	let radius = rootNode.find('div:contains("Mean radius")')
 		.parent().next().text().trim()
-		.match(/\d*\,?\.?\d*\,?\.?\d*\s?±?\s?\d*\.?\d*\skm/)[0];
+		.match(/\d*\,?\.?\d*\,?\.?\d*\s?±?\s?\d*\.?\d*\skm/)[0]
+		.replace(/\,/, '');
 
 	if(radius.includes('±')) {
 		radius = radius.substr(0,radius.indexOf('±'));
@@ -65,44 +66,46 @@ function scrapePlanets(html) {
 		radius = radius.substr(0,radius.indexOf('km'));
 	}
 
-	planet['radius'] = radius.trim() + ' km';
+	planet['radiusKM'] = radius.trim();
 
 
 	// ! rotation
 	// ==========
 	let rotationVelocity = rootNode.find('div:contains("Equatorial rotation")')
 		.parent().next().text()
-		.match(/\d*\,?\.?\d*\.?\d*\skm\/h/)[0];
+		.match(/\d*\,?\.?\d*\.?\d*\skm\/h/)[0]
+		.replace(/km\/h/, '').replace(/\,/, '').trim();
 
-	planet['rotationVelocity'] = rotationVelocity;
+	planet['rotationVelocityKMH'] = rotationVelocity;
 
 
 	// ! aphelion
 	// ==========
 	const aphelion = rootNode.find('a:contains("Aphelion")')
-		.parent().next();
-		
-	planet['aphelion'] = aphelion.text().trim()
+		.parent().next().text().trim()
 		.match(/(\d\.)?(\d{1,3})(,\d{3})*(\u00A0\d{3})*(\.\d+)?\s*AU/)[0]
-		.replace(/(\u00A0)|\s|[ ]/g,'');
+		.replace(/(\u00A0)|\s|[ ]/g,'').replace(/AU/,'').trim();
+		
+	planet['aphelionAU'] = aphelion;
 
 
 	// ! perihelion
 	// ============
 	const perihelion = rootNode.find('a:contains("Perihelion")')
-		.parent().next()
-		
-	planet['perihelion'] = perihelion.text().trim()
+		.parent().next().text().trim()
 		.match(/(\d\.)?(\d{1,3})(,\d{3})*(\u00A0\d{3})*(\.\d+)?\s*AU/)[0]
-		.replace(/(\u00A0)|\s|[ ]/g,'');
+		.replace(/(\u00A0)|\s|[ ]/g,'').replace(/AU/,'').trim()
+		
+	planet['perihelionAU'] = perihelion;
 
 
 	// ! velocity
 	// ============
 	let orbitVelocity = rootNode.find('a[title="Orbital speed"]')
-		.parent().parent().next().text();
+		.parent().parent().next().text()
+		.match(/\d*\.?\d*\skm\/s/)[0].replace(/km\/s/, '').trim();
 
-	planet['orbitVelocity'] = orbitVelocity.match(/\d*\.?\d*\skm\/s/)[0];
+	planet['orbitVelocityKMS'] = orbitVelocity;
 
 	return planet;
 
@@ -126,7 +129,7 @@ function scrapeStars(html) {
 	return star;
 }
 
-Promise.all(urlsPlanets.map((url) => {
+Promise.all(urlPlanets.map((url) => {
 	return fetch(url)
 		.then(status)
 		.then(text)
@@ -134,7 +137,7 @@ Promise.all(urlsPlanets.map((url) => {
 }))
 	.then(planets => {
 		system['planets'] = planets;
-		return fetch(urlsStars[0]);
+		return fetch(urlStars[0]);
 	})
 	.then(status)
 	.then(text)
