@@ -120,11 +120,12 @@ function scrapeStars(html) {
 	star['name'] = rootNode.find('caption')
 		.contents().first().text().trim();
 
-	star['radius'] = rootNode.find('a[title="Solar radius"]')
-		.text().trim() + ' km';
+	star['radiusKM'] = rootNode.find('a[title="Solar radius"]')
+		.text().replace(/\,/, '').trim();
 
-	star['rotationVelocity'] = rootNode.find('th:contains("Rotation velocity")').next().text()
-		.match(/\d*\.?\d*\×?\d*\skm\/h/)[0];
+	star['rotationVelocityKMH'] = rootNode.find('th:contains("Rotation velocity")').next().text()
+		.match(/\d*\.?\d*\×?\d*\skm\/h/)[0]
+		.replace(/km\/h/, '').replace(/\,/, '').trim();
 
 	return star;
 }
